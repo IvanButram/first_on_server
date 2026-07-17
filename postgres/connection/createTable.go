@@ -14,7 +14,9 @@ func CreateTableUsers(conn *pgx.Conn, ctx context.Context) error {
 		description VARCHAR(500) NOT NULL,
 		completed BOOLEAN NOT NULL,
 		createdAt TIMESTAMP NOT NULL,
-		completedAt TIMESTAMP
+		completedAt TIMESTAMP,
+
+		UNIQUE(name)
 		 );
 	`
 	_, err := conn.Exec(ctx, sqlQuery)

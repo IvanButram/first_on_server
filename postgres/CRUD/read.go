@@ -26,3 +26,15 @@ func (crud *CRUD_struct) Read() ([]models.ReadModel, error) {
 
 	return tasks, nil
 }
+
+func (crud *CRUD_struct) ReadOne(id int) models.ReadModel {
+	sqlQuery := `
+	SELECT id, name, description, completed, createdAt, completedAt FROM TASKS
+	WHERE id=$1;
+	`
+
+	var task models.ReadModel
+	crud.Conn.QueryRow(crud.Ctx, sqlQuery, id).Scan(&task.Id, &task.Title, &task.Description, &task.Completed, &task.CreatedAt, &task.CompletedAt)
+
+	return task
+}

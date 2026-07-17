@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	Http "study/http"
 	crud "study/postgres/CRUD"
 	"study/postgres/connection"
 )
@@ -17,31 +18,14 @@ func main() {
 		fmt.Println("Table is succesfully created")
 	}
 
-	Crud := crud.CRUD_struct{
+	Crud_obj := crud.CRUD_struct{
 		Conn: conn,
 		Ctx:  ctx,
 	}
 
-	/*task1 := models.CreateModel{
-		Title:       "Обед",
-		Description: "Победат",
-		CreatedAt:   time.Now(),
-	}
+	//передать Crud в инициализацию хендлеров и передать все хендлеры в сервер
+	handlers := Http.NewHandlers(&Crud_obj)
+	server := Http.NewServer(handlers)
 
-	err = Crud.InsertRow(task1)
-	if err != nil {
-		panic(err)
-	}*/
-
-	/*err = Crud.Update(2)
-	if err != nil {
-		panic(err)
-	}*/
-
-	tasks, err := Crud.Read()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(tasks)
+	server.StartServer()
 }
