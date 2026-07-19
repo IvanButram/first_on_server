@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo List</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Todo List</h1>
+
+    <section class="card">
+      <h2>Новая задача</h2>
+      <form id="task-form" class="task-form">
+        <input
+          id="title"
+          name="title"
+          type="text"
+          placeholder="Название задачи"
+          required
+        />
+        <textarea
+          id="description"
+          name="description"
+          placeholder="Описание задачи"
+          rows="4"
+        ></textarea>
+        <button type="submit">Добавить</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="toolbar">
+        <h2>Список задач</h2>
+        <button id="reload-btn" type="button">Обновить</button>
+      </div>
+
+      <p id="status" class="status"></p>
+      <ul id="task-list" class="task-list"></ul>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

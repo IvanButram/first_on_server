@@ -24,5 +24,12 @@ func (s *HTTPServer) StartServer() error {
 	router.Path("/tasks/{title}").Methods("PATCH").HandlerFunc(s.Handlers.UpdateHandler)
 	router.Path("/tasks/{title}").Methods("DELETE").HandlerFunc(s.Handlers.DeleteHandler)
 
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./frontend/index.html")
+	}).Methods("GET")
+
+	fileServer := http.FileServer(http.Dir("./frontend"))
+	router.PathPrefix("/").Handler(fileServer)
+
 	return http.ListenAndServe(":9091", router)
 }
