@@ -7,8 +7,26 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  build-and-run:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: docker_todo
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 111
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 5432:5432
+        
+    env:
+      CONN_STR: postgres://postgres:111@localhost:5432/docker_todo?sslmode=disable
 
     steps:
       - name: Checkout repository
@@ -30,3 +48,7 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t todo-app .
+      
+      - name: Run app briefly
+        run: |
+          timeout 20s go run main.go
