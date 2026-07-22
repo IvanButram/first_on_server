@@ -2,7 +2,7 @@ include .env
 export
 
 run:
-	go run main.go
+	/app/exe
 
 compose:
 	docker compose up -d --build

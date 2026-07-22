@@ -2,8 +2,10 @@ FROM golang:1.26-bookworm
 
 WORKDIR /app
 
-COPY . .
+COPY go.mod go.sum ./
+RUN go mod download
 
-RUN go mod tidy
+COPY . .
+RUN go build -o /app/exe main.go
 
 CMD ["make", "run"]
