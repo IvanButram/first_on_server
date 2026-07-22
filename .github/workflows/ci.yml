@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Verify Go version
+        run: go version
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build Go project
+        run: go build ./...
+
+      - name: Build Docker image
+        run: docker build -t todo-app .
