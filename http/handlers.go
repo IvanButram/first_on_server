@@ -197,3 +197,24 @@ func (h *HTTPHandlers) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+/*
+HEALTH
+pattern: /health
+method: GET
+info: -
+
+succeed:
+status: 200
+info: "ok"
+
+*/
+
+func (h *HTTPHandlers) Health(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte("ok"))
+	if err != nil {
+		fmt.Println("error on writing ok in health: ", err)
+		return
+	}
+}

@@ -20,3 +20,17 @@ jobs:
             cd ${{ secrets.APP_DIR }}
             git pull origin main
             make compose
+
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -f https://ipotato.xyz/health; then
+                echo "healthcheck passed"
+                exit 0
+              fi
+            
+              echo "healthcheck failed, attempt: $i"
+              sleep 5
+
+            done
+
+            echo "deploy failed: app is not healty"
+            exit 1
