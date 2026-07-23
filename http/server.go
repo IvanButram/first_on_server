@@ -24,6 +24,8 @@ func (s *HTTPServer) StartServer() error {
 	router.Path("/tasks/{title}").Methods("PATCH").HandlerFunc(s.Handlers.UpdateHandler)
 	router.Path("/tasks/{title}").Methods("DELETE").HandlerFunc(s.Handlers.DeleteHandler)
 
+	router.Path("/health").Methods("GET").HandlerFunc(s.Handlers.Health)
+
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./frontend/index.html")
 	}).Methods("GET")
