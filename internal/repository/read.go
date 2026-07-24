@@ -1,15 +1,15 @@
-package crud
+package repository
 
-import "study/postgres/models"
+import "study/pkg/postgres/models"
 
-func (crud *CRUD_struct) Read() ([]models.ReadModel, error) {
+func (r *Repository) Read() ([]models.ReadModel, error) {
 	sqlQuery := `
 	SELECT id, name, description, completed, createdAt, completedAt FROM TASKS;
 	`
 
 	var tasks []models.ReadModel
 
-	rows, err := crud.Conn.Query(crud.Ctx, sqlQuery)
+	rows, err := r.Conn.Query(r.Ctx, sqlQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -27,14 +27,14 @@ func (crud *CRUD_struct) Read() ([]models.ReadModel, error) {
 	return tasks, nil
 }
 
-func (crud *CRUD_struct) ReadOne(id int) models.ReadModel {
+func (r *Repository) ReadOne(id int) models.ReadModel {
 	sqlQuery := `
 	SELECT id, name, description, completed, createdAt, completedAt FROM TASKS
 	WHERE id=$1;
 	`
 
 	var task models.ReadModel
-	crud.Conn.QueryRow(crud.Ctx, sqlQuery, id).Scan(&task.Id, &task.Title, &task.Description, &task.Completed, &task.CreatedAt, &task.CompletedAt)
+	r.Conn.QueryRow(r.Ctx, sqlQuery, id).Scan(&task.Id, &task.Title, &task.Description, &task.Completed, &task.CreatedAt, &task.CompletedAt)
 
 	return task
 }

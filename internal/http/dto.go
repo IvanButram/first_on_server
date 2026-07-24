@@ -1,6 +1,6 @@
 package Http
 
-import "study/postgres/models"
+import "study/pkg/postgres/models"
 
 type CreateDTO struct {
 	Title       string `json:"Title"`

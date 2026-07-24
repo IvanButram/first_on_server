@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	crud "study/postgres/CRUD"
-	"study/postgres/models"
+	"strconv"
+	"study/internal/repository"
+	"study/pkg/postgres/models"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -30,11 +31,11 @@ func WriteError(w http.ResponseWriter, err error, status int) {
 }
 
 type HTTPHandlers struct {
-	Crud_obj *crud.CRUD_struct
+	Rep *repository.Repository
 }
 
-func NewHandlers(Crud_obj *crud.CRUD_struct) *HTTPHandlers {
-	return &HTTPHandlers{Crud_obj: Crud_obj}
+func NewHandlers(r *repository.Repository) *HTTPHandlers {
+	return &HTTPHandlers{Rep: r}
 }
 
 // CREATE
@@ -63,7 +64,7 @@ func (h *HTTPHandlers) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	CreateModel.Title = Create.Title
 	CreateModel.Description = Create.Description
 
-	err = h.Crud_obj.InsertRow(CreateModel)
+	err = h.Rep.InsertRow(CreateModel)
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return
@@ -98,9 +99,9 @@ failed:
 */
 
 func (h *HTTPHandlers) ReadHandler(w http.ResponseWriter, r *http.Request) {
-	tasks, err := h.Crud_obj.Read()
+	tasks, err := h.Rep.Read()
 	if err != nil {
-		WriteError(w, err, http.StatusBadRequest)
+		WriteError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -123,7 +124,7 @@ func (h *HTTPHandlers) ReadHandler(w http.ResponseWriter, r *http.Request) {
 
 // UPDATE
 /*
-pattern: /tasks/{title}
+pattern: /tasks/{id}
 method: PATCH
 info: pattern
 
@@ -136,21 +137,21 @@ failed:
 -response body: JSON: error + time
 */
 func (h *HTTPHandlers) UpdateHandler(w http.ResponseWriter, r *http.Request) {
-	title := mux.Vars(r)["title"]
+	idStr := mux.Vars(r)["id"]
 
-	id, err := h.Crud_obj.TitleToID(title)
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	err = h.Crud_obj.Update(id)
+	err = h.Rep.Update(id)
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	b, err := json.MarshalIndent(h.Crud_obj.ReadOne(id), "", "	")
+	b, err := json.MarshalIndent(h.Rep.ReadOne(id), "", "	")
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return
@@ -181,15 +182,15 @@ failed:
 */
 
 func (h *HTTPHandlers) DeleteHandler(w http.ResponseWriter, r *http.Request) {
-	title := mux.Vars(r)["title"]
+	idStr := mux.Vars(r)["id"]
 
-	id, err := h.Crud_obj.TitleToID(title)
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	err = h.Crud_obj.Delete(id)
+	err = h.Rep.Delete(id)
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return

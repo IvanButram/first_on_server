@@ -15,12 +15,30 @@ function setStatus(message, isError = false) {
 async function parseJsonSafe(response) {
   const text = await response.text();
   if (!text) return null;
-  return JSON.parse(text);
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }
 
 function formatDate(dateString) {
   if (!dateString) return "—";
   return new Date(dateString).toLocaleString("ru-RU");
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => {
+    const map = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    };
+    return map[char];
+  });
 }
 
 async function getTasks() {
@@ -55,13 +73,10 @@ async function createTask(title, description) {
   return response.json();
 }
 
-async function completeTask(title) {
-  const response = await fetch(
-    `${API_BASE_URL}/tasks/${encodeURIComponent(title)}`,
-    {
-      method: "PATCH",
-    }
-  );
+async function completeTask(id) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+    method: "PATCH",
+  });
 
   if (!response.ok) {
     const errorData = await parseJsonSafe(response);
@@ -71,13 +86,10 @@ async function completeTask(title) {
   return response.json();
 }
 
-async function deleteTask(title) {
-  const response = await fetch(
-    `${API_BASE_URL}/tasks/${encodeURIComponent(title)}`,
-    {
-      method: "DELETE",
-    }
-  );
+async function deleteTask(id) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+    method: "DELETE",
+  });
 
   if (!response.ok) {
     const errorData = await parseJsonSafe(response);
@@ -85,7 +97,7 @@ async function deleteTask(title) {
   }
 
   if (response.status === 204) {
-    return;
+    return null;
   }
 
   return parseJsonSafe(response);
@@ -94,51 +106,27 @@ async function deleteTask(title) {
 function createTaskElement(task) {
   const li = document.createElement("li");
   li.className = `task-item ${task.Completed ? "done" : ""}`;
+  li.dataset.id = task.Id;
 
-  const description = task.Description || "Без описания";
+  const description = task.Description?.trim() || "Без описания";
+  const safeTitle = escapeHtml(task.Title);
+  const safeDescription = escapeHtml(description);
 
   li.innerHTML = `
     <div class="task-header">
       <div>
-        <h3 class="task-title">${task.Title}</h3>
+        <h3 class="task-title">${safeTitle}</h3>
         <p class="task-meta">ID: ${task.Id}</p>
         <p class="task-meta">Создано: ${formatDate(task.CreatedAt)}</p>
         <p class="task-meta">Завершено: ${formatDate(task.CompletedAt)}</p>
       </div>
       <div class="task-actions">
-        ${task.Completed ? "" : `<button class="btn-secondary complete-btn">Готово</button>`}
-        <button class="btn-danger delete-btn">Удалить</button>
+        ${task.Completed ? "" : `<button class="btn-secondary complete-btn" type="button">Готово</button>`}
+        <button class="btn-danger delete-btn" type="button">Удалить</button>
       </div>
     </div>
-    <p class="task-description">${description}</p>
+    <p class="task-description">${safeDescription}</p>
   `;
-
-  const completeBtn = li.querySelector(".complete-btn");
-  const deleteBtn = li.querySelector(".delete-btn");
-
-  if (completeBtn) {
-    completeBtn.addEventListener("click", async () => {
-      try {
-        setStatus("Отмечаю задачу выполненной...");
-        await completeTask(task.Title);
-        await loadTasks();
-        setStatus(`Задача "${task.Title}" завершена`);
-      } catch (error) {
-        setStatus(error.message, true);
-      }
-    });
-  }
-
-  deleteBtn.addEventListener("click", async () => {
-    try {
-      setStatus("Удаляю задачу...");
-      await deleteTask(task.Title);
-      await loadTasks();
-      setStatus(`Задача "${task.Title}" удалена`);
-    } catch (error) {
-      setStatus(error.message, true);
-    }
-  });
 
   return li;
 }
@@ -195,6 +183,39 @@ taskForm.addEventListener("submit", async (event) => {
 
 reloadBtn.addEventListener("click", async () => {
   await loadTasks();
+});
+
+taskList.addEventListener("click", async (event) => {
+  const target = event.target;
+  const taskItem = target.closest(".task-item");
+
+  if (!taskItem) return;
+
+  const id = taskItem.dataset.id;
+  const title = taskItem.querySelector(".task-title")?.textContent || `#${id}`;
+
+  if (target.classList.contains("complete-btn")) {
+    try {
+      setStatus("Отмечаю задачу выполненной...");
+      await completeTask(id);
+      await loadTasks();
+      setStatus(`Задача "${title}" завершена`);
+    } catch (error) {
+      setStatus(error.message, true);
+    }
+    return;
+  }
+
+  if (target.classList.contains("delete-btn")) {
+    try {
+      setStatus("Удаляю задачу...");
+      await deleteTask(id);
+      await loadTasks();
+      setStatus(`Задача "${title}" удалена`);
+    } catch (error) {
+      setStatus(error.message, true);
+    }
+  }
 });
 
 document.addEventListener("DOMContentLoaded", async () => {

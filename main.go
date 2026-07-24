@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	Http "study/http"
-	crud "study/postgres/CRUD"
-	"study/postgres/connection"
+	Http "study/internal/http"
+	"study/internal/repository"
+	connection "study/pkg/postgres"
 )
 
 func main() {
@@ -18,13 +18,13 @@ func main() {
 		fmt.Println("Table is succesfully created")
 	}
 
-	Crud_obj := crud.CRUD_struct{
+	r := repository.Repository{
 		Conn: conn,
 		Ctx:  ctx,
 	}
 
 	//передать Crud в инициализацию хендлеров и передать все хендлеры в сервер
-	handlers := Http.NewHandlers(&Crud_obj)
+	handlers := Http.NewHandlers(&r)
 	server := Http.NewServer(handlers)
 
 	server.StartServer()
