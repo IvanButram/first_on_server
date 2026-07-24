@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"study/internal/repository"
 	"study/pkg/postgres/models"
 	"time"
@@ -100,7 +101,7 @@ failed:
 func (h *HTTPHandlers) ReadHandler(w http.ResponseWriter, r *http.Request) {
 	tasks, err := h.Rep.Read()
 	if err != nil {
-		WriteError(w, err, http.StatusBadRequest)
+		WriteError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -123,7 +124,7 @@ func (h *HTTPHandlers) ReadHandler(w http.ResponseWriter, r *http.Request) {
 
 // UPDATE
 /*
-pattern: /tasks/{title}
+pattern: /tasks/{id}
 method: PATCH
 info: pattern
 
@@ -136,9 +137,9 @@ failed:
 -response body: JSON: error + time
 */
 func (h *HTTPHandlers) UpdateHandler(w http.ResponseWriter, r *http.Request) {
-	title := mux.Vars(r)["title"]
+	idStr := mux.Vars(r)["id"]
 
-	id, err := h.Rep.TitleToID(title)
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return
@@ -181,9 +182,9 @@ failed:
 */
 
 func (h *HTTPHandlers) DeleteHandler(w http.ResponseWriter, r *http.Request) {
-	title := mux.Vars(r)["title"]
+	idStr := mux.Vars(r)["id"]
 
-	id, err := h.Rep.TitleToID(title)
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		WriteError(w, err, http.StatusInternalServerError)
 		return
