@@ -1,6 +1,9 @@
 package repository
 
-import "study/pkg/postgres/models"
+import (
+	"study/internal/core"
+	"study/pkg/postgres/models"
+)
 
 func (r *Repository) Read() ([]models.ReadModel, error) {
 	sqlQuery := `
@@ -11,6 +14,7 @@ func (r *Repository) Read() ([]models.ReadModel, error) {
 
 	rows, err := r.Conn.Query(r.Ctx, sqlQuery)
 	if err != nil {
+		r.Logger.Error("error on Selecting tasks: ", core.Field{Key: "err: ", Value: err})
 		return nil, err
 	}
 	defer rows.Close()
@@ -19,6 +23,7 @@ func (r *Repository) Read() ([]models.ReadModel, error) {
 		var t models.ReadModel
 		err = rows.Scan(&t.Id, &t.Title, &t.Description, &t.Completed, &t.CreatedAt, &t.CompletedAt)
 		if err != nil {
+			r.Logger.Error("error on Scanning tasks: ", core.Field{Key: "err: ", Value: err})
 			return nil, err
 		}
 		tasks = append(tasks, t)
