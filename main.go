@@ -19,7 +19,9 @@ func main() {
 	logger, err := core.NewLogger(true, "logs/app.log")
 	if err != nil {
 		fmt.Println("logger is not proccesing")
+		return
 	}
+	defer logger.Sync()
 
 	ctx := context.Background()
 	conn := connection.CheckConnection(ctx)
